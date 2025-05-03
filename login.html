@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giriş Yap - SEM Sokak Lambaları</title>
+  <link rel="icon" type="image/png" href="logo1.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+
+  <style>
+    body {
+  background: linear-gradient(to bottom right, #0f172a, #1e293b);
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  margin: 0;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+
+    .login-box {
+      background-color: #1f2937;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .login-box h3 {
+      margin-bottom: 20px;
+    }
+
+    .form-control {
+      background-color: #1e293b;
+      border: 1px solid #ccc;
+      color: white;
+      border-radius: 8px;
+      caret-color: black;
+      animation: caretBlink 1s step-start infinite;
+    }
+
+    .form-control::placeholder {
+      color: #cbd5e1;
+      opacity: 1;
+    }
+
+    .form-control:focus {
+      border-color: #7b2cbf;
+      box-shadow: 0 0 0 0.2rem rgba(123, 44, 191, 0.25);
+    }
+
+    .btn-custom {
+      background-color: #5a189a;
+      color: white;
+      border: none;
+      font-weight: 600;
+      border-radius: 10px;
+      padding: 10px 20px;
+    }
+
+    .btn-custom:hover {
+      background-color: #7b2cbf;
+    }
+
+    .error-text {
+      color: #dc3545;
+      font-size: 0.9rem;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .welcome-text {
+      font-size: 1.1rem;
+      margin-bottom: 25px;
+      color: #c0caf5;
+    }
+    
+
+@keyframes caretBlink {
+  50% { caret-color: transparent; }
+}
+
+  </style>
+</head>
+<body>
+  <div class="text-center mb-4">
+    <img src="logo.png" alt="Logo" style="height: 80px; filter: drop-shadow(0 0 2px white);">
+  </div>
+
+  <div class="login-box text-center">
+    <h3>🔐 Hoş Geldin!</h3>
+    <p class="welcome-text">Sokak Lambası Otomasyonu</p>
+
+    <form onsubmit="login(); return false;">
+      <input type="email" id="email" class="form-control mb-3" placeholder="📧 E-posta" required>
+      <input type="password" id="password" class="form-control mb-3" placeholder="🔒 Şifre" required>
+      <div class="text-center mt-2">
+        <button type="button" class="btn btn-sm btn-outline-light" onclick="togglePassword()" style="font-size: 0.85rem;">
+          👁 Şifreyi Göster
+        </button>
+      </div>
+      <br>
+      
+      <button type="submit" class="btn btn-custom w-100">Giriş Yap</button>
+    </form>
+
+    <div id="error" class="error-text">❌ Giriş başarısız. Lütfen bilgileri kontrol edin.</div>
+  </div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDTcmnOWP4Q9h2M6zdhKdcr2f--6-yF2nQ",
+    authDomain: "nex-light.firebaseapp.com",
+    projectId: "nex-light",
+    databaseURL: "https://nex-light-default-rtdb.europe-west1.firebasedatabase.app",
+    storageBucket: "nex-light.firebasestorage.app",
+    messagingSenderId: "440624522958",
+    appId: "1:440624522958:web:8347625be50d3dd0b9529f"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  // ✅ Giriş işlemi + kalıcı oturum
+  function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const errorText = document.getElementById("error");
+
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+      .then(() => auth.signInWithEmailAndPassword(email, password))
+      .then(() => window.location.href = "index.html")
+      .catch(() => {
+        errorText.style.display = "block";
+      });
+  }
+  
+  function togglePassword() {
+    const pwdInput = document.getElementById("password");
+    const btn = event.target;
+    if (pwdInput.type === "password") {
+      pwdInput.type = "text";
+      btn.textContent = "👁 Şifreyi Gizle";
+    } else {
+      pwdInput.type = "password";
+      btn.textContent = "👁 Şifreyi Göster";
+    }
+  }
+
+</script>
+
+</body>
+</html>

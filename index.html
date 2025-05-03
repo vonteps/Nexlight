@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Nexlight</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="icon" type="image/png" href="logo1.png">
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+
+</head>
+<style>
+html, body {
+      height: 100%;
+      margin: 0;
+      padding: env(safe-area-inset);
+      background: linear-gradient(to bottom right, #0f172a, #1e293b);
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  
+    :root {
+      color-scheme: dark;
+    }
+  
+    .btn {
+      font-weight: 600;
+      border-radius: 12px;
+      padding: 10px 20px;
+      transition: 0.3s ease;
+    }
+  
+    .navbar-button {
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      border: 2px solid white;
+      background-color: transparent;
+      color: white;
+      text-decoration: none !important;
+      transition: 0.3s ease;
+    }
+  
+    .navbar-button:hover {
+      background-color: white;
+      color: #5a189a !important;
+    }
+  
+    .navbar-button.logout {
+      border-color: #dc3545;
+    }
+  
+    .navbar-button.logout:hover {
+      background-color: #dc3545;
+      color: white !important;
+    }
+  
+    .select-card, .lamp-card {
+      text-align: center;
+      padding: 14px;
+      border-radius: 20px;
+      border: 2px solid transparent;
+      background-color: #1f2937;
+      color: white;
+      width: 140px;
+      min-height: 140px;
+      max-width: 100%;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      user-select: none;
+      transition: 0.3s ease;
+      font-size: 1rem;
+    }
+  
+    .select-card *, .lamp-card * {
+      user-select: none;
+    }
+  
+    .select-card img, .lamp-card img {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 10px;
+    }
+  
+    .select-card input[type="checkbox"],
+    .select-card input[type="radio"] {
+      display: none;
+    }
+  
+    .select-card.selected-true,
+    .lamp-card.on {
+      background-color: #198754;
+      border-color: #198754;
+    }
+  
+    .select-card.selected-false,
+    .lamp-card.off {
+      background-color: #dc3545;
+      border-color: #dc3545;
+    }
+  
+    .lamp-card div,
+    .status-card div {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  
+    .form-control {
+      background-color: #1e293b;
+      color: white;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+  
+    .form-control:focus {
+      box-shadow: 0 0 0 0.25rem rgba(90, 24, 154, 0.25);
+      border-color: #7b2cbf;
+    }
+  
+    .hidden {
+      display: none !important;
+    }
+  
+    #notification {
+      position: fixed;
+      top: calc(70px + env(safe-area-inset-top));
+      right: 20px;
+      z-index: 9999;
+      padding: 12px 20px;
+      font-weight: bold;
+      border-radius: 10px;
+      display: none;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      max-width: 300px;
+      text-align: center;
+    }
+  
+    #notification.success {
+      background-color: #198754;
+      color: white;
+    }
+  
+    #notification.error {
+      background-color: #dc3545;
+      color: white;
+    }
+  
+    .status-card {
+      pointer-events: none;
+      opacity: 0.85;
+      background-color: #1e293b;
+      border: 2px dashed #444;
+      border-radius: 18px;
+      padding: 12px;
+      min-width: 180px;
+      text-align: center;
+      user-select: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      font-size: 0.9rem;
+  
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+  
+    .status-card img {
+      width: 28px;
+      height: 28px;
+      margin-bottom: 0;
+    }
+  
+    .status-card.on {
+      border-color: #198754;
+    }
+  
+    .status-card.off {
+      border-color: #dc3545;
+    }
+  
+    @media (max-width: 768px) {
+      .select-card, .lamp-card {
+        width: 110px;
+        min-height: 110px;
+        padding: 10px;
+        font-size: 0.85rem;
+      }
+  
+      .select-card img, .lamp-card img {
+        width: 36px;
+        height: 36px;
+      }
+  
+      .navbar-button {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+      }
+  
+      .status-card {
+        min-width: 140px;
+        font-size: 0.8rem;
+      }
+  
+      .status-card img {
+        width: 24px;
+        height: 24px;
+      }
+  
+      #notification {
+        right: 10px;
+        left: 10px;
+        max-width: unset;
+      }
+    }
+  
+    footer {
+      background: linear-gradient(to right, #5a189a, #7b2cbf);
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+      padding: 1rem;
+    }
+  
+    .navbar {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+</style>
+<body>
+
+
+  <nav class="navbar navbar-expand-lg navbar-dark p-3" style="background: linear-gradient(to right, #5a189a, #7b2cbf);">
+    <div class="container-fluid justify-content-between">
+      <div class="d-flex align-items-center gap-2">
+        <a href="index.html" class="d-flex align-items-center gap-2">
+          <img src="logo.png" alt="Logo" style="height: 60px; filter: drop-shadow(0 0 2px white);">
+        </a>        
+      </div>
+      <div class="d-flex gap-2">
+        <a href="query_logs_firebase.html" class="navbar-button">🔍 Sorgu Paneli</a>
+        <a href="#" class="navbar-button logout" onclick="logout()">🚪 Çıkış Yap</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="statusBar" class="text-center py-2" style="background-color: #1e293b;">
+    <span id="connectionStatus">🔄 Sistem durumu kontrol ediliyor...</span><br>
+    <small id="lastSeen" style="color: gray;"></small>
+  </div>
+  
+
+  
+  
+  
+<div id="notification" class="success">Bildirim buraya gelecek</div>
+<main class="flex-grow-1">
+  <br>
+  <h2 class="text-center display-5 mb-5">Sokak Lambası Otomasyon Sistemi</h2>
+  <!-- MOD GEÇİŞ BUTONLARI -->
+  <div class="d-flex justify-content-center mb-4">
+    <div class="btn-group">
+      <button id="manualBtn" class="btn btn-outline-light" onclick="setMode('manual')">Manuel Mod</button>
+      <button id="autoBtn" class="btn btn-outline-light" onclick="setMode('auto')">Otomatik Mod</button>
+      <button id="ldrBtn" onclick="setMode('ldr')" class="btn btn-outline-light">Işık Sensörü Mod</button>
+    </div>
+  </div>
+    
+  
+  
+
+  <!-- MANUEL MOD -->
+  <div id="manual-controls">
+    <div class="text-center">
+      <h4 class="mb-4">💡 Lamba Kontrolleri</h4>
+      <div id="lights-container" class="d-flex flex-wrap justify-content-center gap-3"></div>
+      <div class="mt-4">
+        <button class="btn btn-success" onclick="toggleAllLights('on')">Tümünü Aç</button>
+        <button class="btn btn-danger" onclick="toggleAllLights('off')">Tümünü Kapat</button>
+      </div>
+      <div class="text-center mt-5">
+        <h5 class="mb-3">🔎 Anlık LED Durumları</h5>
+        <div id="led-status-display" class="d-flex flex-wrap justify-content-center gap-3"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OTOMATİK MOD -->
+  <div id="auto-controls" class="hidden mt-5">
+    <h5 class="text-center mb-3">🎯 Sensör Ayarları</h5>
+    <div class="d-flex flex-wrap justify-content-center gap-3 mb-4">
+      <div class="select-card" onclick="toggleSensor(1)">
+        <input type="checkbox" id="sensor1Enabled">
+        <img src="https://cdn-icons-png.flaticon.com/512/7458/7458163.png" alt="Sensör 1">
+        <div>Sensör 1</div>
+      </div>
+      <div class="select-card" onclick="toggleSensor(2)">
+        <input type="checkbox" id="sensor2Enabled">
+        <img src="https://cdn-icons-png.flaticon.com/512/7458/7458163.png" alt="Sensör 2">
+        <div>Sensör 2</div>
+      </div>
+    </div>
+
+    <h5 class="text-center mb-3">🌙 LDR Ayarı</h5>
+    <div class="d-flex justify-content-center mb-4">
+      <div class="select-card" onclick="toggleLDR()">
+        <input type="checkbox" id="ldrEnabled">
+        <img src="https://cdn-icons-png.flaticon.com/512/1160/1160411.png" alt="LDR">
+        <div>Ortam Işığı</div>
+      </div>
+    </div>
+
+    <h5 class="text-center mb-3">🧭 Hareket Algılama Kaynağı</h5>
+    <div class="d-flex justify-content-center mb-4">
+      <div class="select-card" onclick="toggleMotionSource()">
+        <input type="checkbox" id="motionSourceSwitch">
+        <img src="https://cdn-icons-png.flaticon.com/512/60/60525.png" alt="Kaynak">
+        <div>Kaynak: Switch / Sensör</div>
+      </div>
+    </div>
+
+    <h5 class="text-center mb-3">💡 LED Ayarları</h5>
+    <div class="d-flex flex-wrap justify-content-center gap-3 mb-4">
+      <div class="select-card" onclick="toggleLed(1)">
+        <input type="checkbox" id="led1">
+        <img src="https://cdn-icons-png.flaticon.com/512/427/427735.png">
+        <div>Lamba 1</div>
+      </div>
+      <div class="select-card" onclick="toggleLed(2)">
+        <input type="checkbox" id="led2">
+        <img src="https://cdn-icons-png.flaticon.com/512/427/427735.png">
+        <div>Lamba 2</div>
+      </div>
+      <div class="select-card" onclick="toggleLed(3)">
+        <input type="checkbox" id="led3">
+        <img src="https://cdn-icons-png.flaticon.com/512/427/427735.png">
+        <div>Lamba 3</div>
+      </div>
+      <div class="select-card" onclick="toggleLed(4)">
+        <input type="checkbox" id="led4">
+        <img src="https://cdn-icons-png.flaticon.com/512/427/427735.png">
+        <div>Lamba 4</div>
+      </div>
+    </div>
+
+    <!-- Otomatik Mod Tümünü Aç/Kapat -->
+<div class="text-center mb-5">
+  <button class="btn btn-success" onclick="setAllAutoConfigLeds(true)">Tümünü Aktif Et</button>
+  <button class="btn btn-danger" onclick="setAllAutoConfigLeds(false)">Tümünü Pasifleştir</button>
+</div>
+
+
+    <div class="text-center mt-5">
+      <h5 class="mb-3">🔎 Anlık LED Durumları</h5>
+      <div id="auto-led-status" class="d-flex flex-wrap justify-content-center gap-3"></div>
+    </div>
+
+    <!-- 🔄 Ekstra Durum Kartları -->
+<div class="text-center mt-5">
+  <h5 class="mb-3">📊 Switch ve LDR Değerleri</h5>
+  <div id="extra-status" class="d-flex flex-wrap justify-content-center gap-3"></div>
+</div>
+
+    <h5 class="text-center mt-4">🌘 LDR Eşik Değeri</h5>
+    <div class="d-flex justify-content-center gap-2 mb-4">
+      <input type="number" id="ldrThresholdInput" class="form-control" style="width:120px" min="0" max="1024" placeholder="500">
+      <span class="align-self-center">değer</span>
+      <button class="btn btn-primary" onclick="saveLdrThreshold()">Kaydet</button>
+    </div>
+
+    <h5 class="text-center mt-4">⏱️ Kapanma Süresi</h5>
+    <div class="d-flex justify-content-center gap-2 mb-5">
+      <input type="number" id="delayInput" class="form-control" style="width:100px" min="1">
+      <span class="align-self-center">saniye</span>
+      <button class="btn btn-primary" onclick="saveDelay()">Kaydet</button>
+    </div>
+    
+
+  </div>
+
+<!-- IŞIK SENSÖRÜ MODU -->
+<div id="ldr-controls" class="hidden mt-5">
+
+  <!-- 🌘 LDR Eşik Değeri -->
+  <h5 class="text-center mb-3">🌘 LDR Eşik Değeri</h5>
+  <div class="d-flex justify-content-center gap-2 mb-4">
+    <input type="number" id="ldrThresholdLdr" class="form-control" style="width:120px" min="0" max="1024" placeholder="500">
+    <span class="align-self-center">değer</span>
+    <button class="btn btn-primary" onclick="saveLdrThresholdLdr()">Kaydet</button>
+  </div>
+
+  <!-- 📊 Işık Durumu Kartları -->
+  <h5 class="text-center mb-3 mt-4">📊 Ortam Işığı Durumu</h5>
+  <div id="ldr-extra-status" class="d-flex flex-wrap justify-content-center gap-3"></div>
+
+  <br>
+
+  <!-- 💡 LED Ayarları -->
+  <h5 class="text-center mb-3">💡 LED Ayarları</h5>
+  <div class="d-flex flex-wrap justify-content-center gap-3 mb-4">
+    <div class="select-card" id="ldr-led-1" onclick="toggleLdrLed(1)">
+      <input type="checkbox" id="ldrLed1">
+      <img src="https://cdn-icons-png.flaticon.com/512/427/427735.png">
+      <div>Lamba 1</div>
+    </div>
+    <div class="select-card" id="ldr-led-2" onclick="toggleLdrLed(2)">
+      <input type="checkbox" id="ldrLed2">
+      <img src="https://cdn-icons-png.flaticon.com/512/427/427735.png">
+      <div>Lamba 2</div>
+    </div>
+    <div class="select-card" id="ldr-led-3" onclick="toggleLdrLed(3)">
+      <input type="checkbox" id="ldrLed3">
+      <img src="https://cdn-icons-png.flaticon.com/512/427/427735.png">
+      <div>Lamba 3</div>
+    </div>
+    <div class="select-card" id="ldr-led-4" onclick="toggleLdrLed(4)">
+      <input type="checkbox" id="ldrLed4">
+      <img src="https://cdn-icons-png.flaticon.com/512/427/427735.png">
+      <div>Lamba 4</div>
+    </div>
+  </div>
+
+  <!-- Tümünü Aç / Kapat -->
+  <div class="text-center mb-4">
+    <button class="btn btn-success" onclick="setAllAutoConfigLeds(true)">Tümünü Aktif Et</button>
+    <button class="btn btn-danger" onclick="setAllAutoConfigLeds(false)">Tümünü Pasifleştir</button>
+  </div>
+
+  <!-- 🔎 Anlık LED Durumları -->
+  <h5 class="text-center mb-3">🔎 Anlık LED Durumları</h5>
+  <div id="ldr-led-status" class="d-flex flex-wrap justify-content-center gap-3"></div>
+
+</div>
+
+
+</main>
+
+<script>
+  const firebaseConfig = {
+  apiKey: "AIzaSyDTcmnOWP4Q9h2M6zdhKdcr2f--6-yF2nQ",
+  authDomain: "nex-light.firebaseapp.com",
+  databaseURL: "https://nex-light-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nex-light",
+  storageBucket: "nex-light.firebasestorage.app",
+  messagingSenderId: "440624522958",
+  appId: "1:440624522958:web:8347625be50d3dd0b9529f"
+};
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  function showNotification(message, type = "success") {
+    const el = document.getElementById("notification");
+    el.className = type === "error" ? "error" : "success";
+    el.textContent = message;
+    el.style.display = "block";
+    clearTimeout(window.notificationTimeout);
+    window.notificationTimeout = setTimeout(() => el.style.display = "none", 4000);
+  }
+
+  function getCurrentTimestamp() {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_` +
+         `${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+}
+
+function toggleLdrLed(id) {
+  const checkbox = document.getElementById("ldrLed" + id);
+  const cardId = "ldr-led-" + id;
+  const card = document.getElementById(cardId);
+  if (!checkbox || !card) {
+    console.warn(`Element bulunamadı: ldrLed${id} veya ${cardId}`);
+    return;
+  }
+
+  const isChecked = !checkbox.checked;
+  checkbox.checked = isChecked;
+
+  // Firebase'e yaz
+  db.ref("auto_config/led" + id).set(isChecked);
+
+  // Bildirim
+  showNotification(`Lamba ${id} Işık Sensörü Modu için ${isChecked ? "Aktif" : "Pasif"}`);
+
+  // Kartı güncelle
+  updateCardVisual(
+    cardId,
+    `Lamba ${id}`,
+    "https://cdn-icons-png.flaticon.com/512/427/427735.png",   // Aktif icon
+    "https://cdn-icons-png.flaticon.com/512/1828/1828843.png", // Pasif icon
+    isChecked
+  );
+}
+
+
+
+  function pushLedLog(ledId, status) {
+    db.ref("led_log").push({
+      led_id: ledId,
+      status: status,
+      timestamp: getCurrentTimestamp()
+    });
+  }
+  function setMode(mode) {
+    db.ref("system_mode/mode").set(mode);
+
+    document.getElementById("manual-controls").classList.toggle("hidden", mode !== "manual");
+    document.getElementById("auto-controls").classList.toggle("hidden", mode !== "auto");
+    document.getElementById("ldr-controls").classList.toggle("hidden", mode !== "ldr");
+
+    document.getElementById("manualBtn").classList.toggle("btn-primary", mode === "manual");
+    document.getElementById("autoBtn").classList.toggle("btn-primary", mode === "auto");
+    document.getElementById("ldrBtn").classList.toggle("btn-primary", mode === "ldr");
+
+    document.getElementById("manualBtn").classList.toggle("btn-outline-light", mode !== "manual");
+    document.getElementById("autoBtn").classList.toggle("btn-outline-light", mode !== "auto");
+    document.getElementById("ldrBtn").classList.toggle("btn-outline-light", mode !== "ldr");
+
+    showNotification("Mod değiştirildi: " + {
+  manual: "Manuel",
+  auto: "Otomatik",
+  ldr: "Işık Sensörü"
+}[mode]);
+
+  }
+
+  function updateCardVisual(id, label, iconOn, iconOff, isActive) {
+    const card = document.getElementById(id).closest(".select-card");
+    const img = card.querySelector("img");
+    const text = card.querySelector("div:last-child");
+    img.src = isActive ? iconOn : iconOff;
+    text.textContent = `${label}: ${isActive ? "Aktif" : "Pasif"}`;
+    card.classList.toggle("selected-true", isActive);
+    card.classList.toggle("selected-false", !isActive);
+  }
+
+  function toggleSensor(id) {
+    const cb = document.getElementById("sensor" + id + "Enabled");
+    cb.checked = !cb.checked;
+    const val = cb.checked;
+    db.ref("auto_config/sensor" + id + "_enabled").set(val);
+    showNotification(`Sensör ${id} durumu: ${val ? "Aktif" : "Pasif"}`);
+    updateCardVisual("sensor" + id + "Enabled", `Sensör ${id}`,
+      "https://cdn-icons-png.flaticon.com/512/7458/7458163.png",
+      "https://cdn-icons-png.flaticon.com/512/1828/1828843.png",
+      val
+    );
+  }
+
+  function toggleLed(id) {
+    const cb = document.getElementById("led" + id);
+    cb.checked = !cb.checked;
+    const val = cb.checked;
+    db.ref("auto_config/led" + id).set(val);
+    showNotification(`LED ${id} ayarı: ${val ? "Aktif" : "Pasif"}`);
+    pushLedLog("LED" + id, val ? "on" : "off");
+    updateCardVisual("led" + id, `Lamba ${id}`,
+      "https://cdn-icons-png.flaticon.com/512/427/427735.png",
+      "https://cdn-icons-png.flaticon.com/512/1828/1828843.png",
+      val
+    );
+  }
+
+  function toggleLDR() {
+    const cb = document.getElementById("ldrEnabled");
+    cb.checked = !cb.checked;
+    const val = cb.checked;
+    db.ref("auto_config/ldr_enabled").set(val);
+    showNotification("LDR ayarı: " + (val ? "Aktif" : "Pasif"));
+    updateCardVisual("ldrEnabled", "Ortam Işığı",
+      "https://cdn-icons-png.flaticon.com/512/1160/1160411.png",
+      "https://cdn-icons-png.flaticon.com/512/1828/1828843.png",
+      val
+    );
+  }
+  function toggleMotionSource() {
+    const cb = document.getElementById("motionSourceSwitch");
+    cb.checked = !cb.checked;
+    const val = cb.checked ? "switch" : "sensor";
+
+    db.ref("auto_config/motion_detection_source").set(val);
+    showNotification("Hareket kaynağı güncellendi: " + (val === "switch" ? "Switch" : "Sensör"));
+
+    const card = cb.closest(".select-card");
+    const img = card.querySelector("img");
+    const text = card.querySelector("div:last-child");
+
+    img.src = val === "switch"
+      ? "https://cdn-icons-png.flaticon.com/512/25/25281.png"
+      : "https://cdn-icons-png.flaticon.com/512/60/60525.png";
+
+    text.textContent = "Kaynak: " + (val === "switch" ? "Switch" : "Sensör");
+    card.classList.toggle("selected-true", val === "switch");
+    card.classList.toggle("selected-false", val !== "switch");
+  }
+
+  function saveDelay() {
+    const val = parseInt(document.getElementById("delayInput").value) || 5;
+    db.ref("auto_config/delay_seconds").set(val);
+    showNotification("Gecikme süresi güncellendi: " + val + " sn");
+  }
+
+  function saveLdrThreshold() {
+    const val = parseInt(document.getElementById("ldrThresholdInput").value);
+    if (isNaN(val) || val < 0 || val > 1024) {
+      showNotification("0–1024 arası geçerli bir değer girin", "error");
+      return;
+    }
+    db.ref("auto_config/ldr_threshold").set(val);
+    showNotification("LDR eşik değeri güncellendi: " + val);
+  }
+
+  function saveLdrThresholdLdr() {
+  const val = parseInt(document.getElementById("ldrThresholdLdr").value);
+  if (isNaN(val) || val < 0 || val > 1024) {
+    showNotification("0–1024 arası geçerli bir değer girin", "error");
+    return;
+  }
+  db.ref("auto_config/ldr_threshold").set(val);
+  showNotification("LDR eşik değeri (ışık sensörü modu) güncellendi: " + val);
+}
+
+
+  function toggleSingleLight(key, state) {
+    db.ref("leds/" + key).set(state);
+    showNotification(`${key} ${state === "on" ? "açıldı" : "kapandı"}`);
+    pushLedLog(key, state);
+  }
+
+  function toggleAllLights(state) {
+    const update = {};
+    for (let i = 1; i <= 4; i++) {
+      update["LED" + i] = state;
+      pushLedLog("LED" + i, state);
+    }
+    db.ref("leds").update(update);
+    showNotification("Tüm lambalar " + (state === "on" ? "açıldı" : "kapatıldı"));
+  }
+  function fetchMode() {
+    db.ref("system_mode/mode").on("value", snap => {
+      setMode(snap.val() || "manual");
+    });
+  }
+
+  
+
+function setAllAutoConfigLeds(state) {
+  const updates = {};
+
+  for (let i = 1; i <= 4; i++) {
+    const ledKey = "led" + i;
+    updates[ledKey] = state;
+
+    const checkboxAuto = document.getElementById(ledKey);
+    const checkboxLdr = document.getElementById("ldrLed" + i);
+
+    if (checkboxAuto) checkboxAuto.checked = state;
+    if (checkboxLdr) checkboxLdr.checked = state;
+
+    updateCardVisual(ledKey, `Lamba ${i}`,
+      "https://cdn-icons-png.flaticon.com/512/427/427735.png",
+      "https://cdn-icons-png.flaticon.com/512/1828/1828843.png",
+      state
+    );
+
+    updateCardVisual("ldr-led-" + i, `Lamba ${i}`,
+      "https://cdn-icons-png.flaticon.com/512/427/427735.png",
+      "https://cdn-icons-png.flaticon.com/512/1828/1828843.png",
+      state
+    );
+  }
+
+  db.ref("auto_config").update(updates)
+    .then(() => {
+      showNotification(`Tüm lambalar ${state ? "aktifleştirildi" : "pasifleştirildi"}`);
+    })
+    .catch(err => {
+      console.error("Firebase güncelleme hatası:", err);
+      showNotification("Firebase hatası: " + err.message, "error");
+    });
+}
+
+
+
+
+function fetchAutoConfig() {
+  db.ref("auto_config").on("value", snap => {
+    const d = snap.val() || {};
+
+    document.getElementById("sensor1Enabled").checked = !!d.sensor1_enabled;
+    document.getElementById("sensor2Enabled").checked = !!d.sensor2_enabled;
+    document.getElementById("ldrEnabled").checked = !!d.ldr_enabled;
+    document.getElementById("motionSourceSwitch").checked = d.motion_detection_source === "switch";
+
+    document.getElementById("delayInput").value = d.delay_seconds || 5;
+    document.getElementById("ldrThresholdInput").value = d.ldr_threshold || 500;
+    document.getElementById("ldrThresholdLdr").value = d.ldr_threshold || 500;
+
+    updateCardVisual("sensor1Enabled", "Sensör 1",
+      "https://cdn-icons-png.flaticon.com/512/7458/7458163.png",
+      "https://cdn-icons-png.flaticon.com/512/1828/1828843.png",
+      !!d.sensor1_enabled);
+
+    updateCardVisual("sensor2Enabled", "Sensör 2",
+      "https://cdn-icons-png.flaticon.com/512/7458/7458163.png",
+      "https://cdn-icons-png.flaticon.com/512/1828/1828843.png",
+      !!d.sensor2_enabled);
+
+    updateCardVisual("ldrEnabled", "Ortam Işığı",
+      "https://cdn-icons-png.flaticon.com/512/1160/1160411.png",
+      "https://cdn-icons-png.flaticon.com/512/1828/1828843.png",
+      !!d.ldr_enabled);
+
+    for (let i = 1; i <= 4; i++) {
+      const ledKey = "led" + i;
+      const label = `Lamba ${i}`;
+
+      const autoEl = document.getElementById(ledKey);
+      if (autoEl) {
+        autoEl.checked = !!d[ledKey];
+        updateCardVisual(ledKey, label,
+          "https://cdn-icons-png.flaticon.com/512/427/427735.png",
+          "https://cdn-icons-png.flaticon.com/512/1828/1828843.png",
+          !!d[ledKey]);
+      }
+
+      const ldrEl = document.getElementById("ldrLed" + i);
+      if (ldrEl) {
+        ldrEl.checked = !!d[ledKey];
+        updateCardVisual("ldr-led-" + i, label,
+          "https://cdn-icons-png.flaticon.com/512/427/427735.png",
+          "https://cdn-icons-png.flaticon.com/512/1828/1828843.png",
+          !!d[ledKey]);
+      }
+    }
+
+    const motionCard = document.getElementById("motionSourceSwitch").closest(".select-card");
+    const motionImg = motionCard.querySelector("img");
+    const motionText = motionCard.querySelector("div:last-child");
+    const isSwitch = d.motion_detection_source === "switch";
+
+    motionImg.src = isSwitch
+      ? "https://cdn-icons-png.flaticon.com/512/25/25281.png"
+      : "https://cdn-icons-png.flaticon.com/512/60/60525.png";
+
+    motionText.textContent = "Kaynak: " + (isSwitch ? "Switch" : "Sensör");
+    motionCard.classList.toggle("selected-true", isSwitch);
+    motionCard.classList.toggle("selected-false", !isSwitch);
+  });
+}
+
+function fetchCurrentLedStatus() {
+  db.ref("current_led_status").on("value", snap => {
+    const data = snap.val() || {};
+    const manualDisplay = document.getElementById("led-status-display");
+    const autoDisplay = document.getElementById("auto-led-status");
+    const ldrDisplay = document.getElementById("ldr-led-status");
+
+    [manualDisplay, autoDisplay, ldrDisplay].forEach(display => {
+      if (!display) return;
+      display.innerHTML = "";
+
+      Object.entries(data).forEach(([key, val]) => {
+        const isOn = val === "on";
+        const num = key.replace("LED", "");
+        const imgSrc = isOn
+          ? "https://cdn-icons-png.flaticon.com/512/427/427735.png"
+          : "https://cdn-icons-png.flaticon.com/512/1828/1828843.png";
+
+        const div = document.createElement("div");
+        div.className = `status-card ${isOn ? "on" : "off"}`;
+        div.innerHTML = `
+          <img src="${imgSrc}" style="width: 24px; height: 24px;">
+          <span>Lamba ${num}: ${isOn ? "Açık" : "Kapalı"}</span>
+        `;
+        display.appendChild(div);
+      });
+    });
+  });
+}
+
+function fetchLdrAndUpdateLEDs() {
+  db.ref("auto_config").on("value", snap => {
+    const d = snap.val() || {};
+
+    const ldrDeger = typeof d.ldr_deger === "number" ? d.ldr_deger : 0;
+    const esik = typeof d.ldr_threshold === "number" ? d.ldr_threshold : 500;
+    const ortamKaranlik = ldrDeger < esik;
+
+    // Anlık LDR değerini göster
+    const ldrEl = document.getElementById("ldr-ldr-deger");
+    if (ldrEl) ldrEl.textContent = ldrDeger;
+
+    // Firebase'e yazmak için LED durumlarını topla
+    const updates = {};
+
+    for (let i = 1; i <= 4; i++) {
+      const ledKey = "led" + i;
+      const isLedEnabled = !!d[ledKey]; // LED işaretli mi?
+      const shouldBeOn = ortamKaranlik && isLedEnabled;
+
+      // Görsel kart: sadece LED aktif/pasif durumuna göre yeşil/kırmızı
+      const card = document.getElementById("ldr-led-" + i);
+      if (card) {
+        card.classList.toggle("selected-true", isLedEnabled);
+        card.classList.toggle("selected-false", !isLedEnabled);
+      }
+
+      // LED fiziksel durumu (yanacak mı?) sadece karanlığa göre belirlenir
+      updates["LED" + i] = shouldBeOn ? "on" : "off";
+    }
+
+  });
+}
+
+
+function fetchLdrThreshold() {
+  const input = document.getElementById("ldrThresholdLdr");
+  if (!input) return;
+
+  db.ref("auto_config/ldr_threshold").on("value", snap => {
+    const val = snap.val();
+    if (typeof val === "number") {
+      input.value = val;
+    }
+  });
+}
+
+
+
+function fetchLdrExtraStatus() {
+  const container = document.getElementById("ldr-extra-status");
+  if (!container) return;
+
+  db.ref("auto_config").on("value", snap => {
+    const d = snap.val() || {};
+    const ldrDeger = typeof d.ldr_deger === "number" ? d.ldr_deger : 0;
+    const esik = typeof d.ldr_threshold === "number" ? d.ldr_threshold : 500;
+    const havaKaranlik = ldrDeger < esik;
+
+    container.innerHTML = "";
+
+    // 🌗 Hava Durumu Kartı
+    const durumDiv = document.createElement("div");
+    durumDiv.className = `status-card ${havaKaranlik ? "off" : "on"}`;
+    durumDiv.innerHTML = `
+      <img src="${havaKaranlik 
+        ? "https://cdn-icons-png.flaticon.com/512/4215/4215978.png" 
+        : "https://cdn-icons-png.flaticon.com/512/869/869869.png"}">
+      <div>Hava: ${havaKaranlik ? "Karanlık" : "Aydınlık"}<br>
+      (LDR: ${ldrDeger} / Eşik: ${esik})</div>
+    `;
+    container.appendChild(durumDiv);
+  });
+}
+
+
+  function fetchRealtimeExtras() {
+    const container = document.getElementById("extra-status");
+    if (!container) return;
+
+    db.ref("auto_config").on("value", snap => {
+      const d = snap.val() || {};
+      const switchStatus = d.switch_status === "on";
+      const ldrDeger = typeof d.ldr_deger === "number" ? d.ldr_deger : 0;
+      const esik = typeof d.ldr_threshold === "number" ? d.ldr_threshold : 500;
+
+      container.innerHTML = "";
+
+      const swDiv = document.createElement("div");
+      swDiv.className = `status-card ${switchStatus ? "on" : "off"}`;
+      swDiv.innerHTML = `
+        <img src="${switchStatus 
+          ? "https://cdn-icons-png.flaticon.com/512/709/709612.png" 
+          : "https://cdn-icons-png.flaticon.com/512/1828/1828843.png"}">
+        <div>Anahtar: ${switchStatus ? "Açık" : "Kapalı"}</div>
+      `;
+      container.appendChild(swDiv);
+
+      
+
+      const havaKaranlik = ldrDeger < esik;
+      const durumDiv = document.createElement("div");
+      durumDiv.className = `status-card ${havaKaranlik ? "off" : "on"}`;
+      durumDiv.innerHTML = `
+        <img src="${havaKaranlik 
+          ? "https://cdn-icons-png.flaticon.com/512/4215/4215978.png" 
+          : "https://cdn-icons-png.flaticon.com/512/869/869869.png"}">
+        <div>Hava: ${havaKaranlik ? "Karanlık" : "Aydınlık"}<br>
+        (LDR: ${ldrDeger} / Eşik: ${esik})</div>
+      `;
+      container.appendChild(durumDiv);
+    });
+  }
+
+ 
+  function fetchLeds() {
+    db.ref("leds").on("value", snap => {
+      const data = snap.val() || {};
+      const container = document.getElementById("lights-container");
+      container.innerHTML = "";
+      Object.entries(data).forEach(([key, val]) => {
+        const isOn = val === "on";
+        const num = key.replace("LED", "");
+        const imgSrc = isOn
+          ? "https://cdn-icons-png.flaticon.com/512/427/427735.png"
+          : "https://cdn-icons-png.flaticon.com/512/1828/1828843.png";
+        const card = document.createElement("div");
+        card.className = `lamp-card ${isOn ? "on" : "off"}`;
+        card.onclick = () => toggleSingleLight(key, isOn ? "off" : "on");
+        card.innerHTML = `<img src="${imgSrc}"><div>Lamba ${num}: ${isOn ? "Açık" : "Kapalı"}</div>`;
+        container.appendChild(card);
+      });
+    });
+  }
+
+  function logout() {
+    firebase.auth().signOut().then(() => {
+      window.location.href = "login.html";
+    }).catch(error => {
+      alert("Çıkış sırasında hata: " + error.message);
+    });
+  }
+
+  firebase.auth().onAuthStateChanged(user => {
+    if (!user) window.location.href = "login.html";
+  });
+
+  window.addEventListener("DOMContentLoaded", () => {
+  fetchMode();
+  fetchAutoConfig();
+  fetchLeds();
+  fetchCurrentLedStatus();
+  fetchRealtimeExtras();
+  fetchLdrAndUpdateLEDs();
+  fetchLdrExtraStatus();
+  fetchLdrThreshold(); 
+});
+
+</script>
+
+<script>
+  const lastSeenRef = firebase.database().ref("/system_status/last_seen");
+  let lastSeenTime = null;
+
+  lastSeenRef.on("value", (snap) => {
+  const zamanStr = snap.val();
+  const connectionEl = document.getElementById("connectionStatus");
+
+  if (zamanStr) {
+    const y = parseInt(zamanStr.slice(0, 4));
+    const m = parseInt(zamanStr.slice(4, 6)) - 1;
+    const d = parseInt(zamanStr.slice(6, 8));
+    const h = parseInt(zamanStr.slice(9, 11));
+    const mi = parseInt(zamanStr.slice(11, 13));
+    const s = parseInt(zamanStr.slice(13, 15));
+
+    lastSeenTime = new Date(y, m, d, h, mi, s);
+
+    // Modern tarih formatı
+    const options = {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    };
+    const formattedDate = lastSeenTime.toLocaleString("tr-TR", options);
+
+    document.getElementById("lastSeen").innerText = "🕒 Son Bağlantı: " + formattedDate;
+
+    // Durum rengi
+    const now = new Date();
+    const fark = (now - lastSeenTime) / 1000;
+    if (fark > 15) {
+      connectionEl.innerHTML = "🔴 Sistem Durumu: <strong>ÇEVRIMDIŞI</strong>";
+      connectionEl.style.color = "#ff5555";
+    } else {
+      connectionEl.innerHTML = "🟢 Sistem Durumu: <strong>ÇEVRİMİÇİ</strong>";
+      connectionEl.style.color = "#00ff88";
+    }
+  }
+});
+
+  setInterval(() => {
+    if (!lastSeenTime) return;
+    const now = new Date();
+    const fark = (now - lastSeenTime) / 1000;
+
+    const el = document.getElementById("connectionStatus");
+    if (fark > 15) {
+      el.innerHTML = "🔴 Sistem Durumu: <strong>ÇEVRIMDIŞI</strong>";
+      el.style.color = "#ff5555";
+    } else {
+      el.innerHTML = "🟢 Sistem Durumu: <strong>ÇEVRİMİÇİ</strong>";
+      el.style.color = "#00ff88";
+    }
+  }, 5000);
+</script>
+
+<footer class="text-white text-center py-4 mt-3 border-top" style="background: linear-gradient(to right, #5a189a, #7b2cbf);">
+  &copy; 2025 Nexlight - Tüm Hakları Saklıdır.
+</footer>
+
+</body>
+</html>
