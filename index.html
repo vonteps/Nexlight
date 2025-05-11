@@ -257,22 +257,21 @@ html, body {
         <a href="#" class="navbar-button logout" onclick="logout()">🚪 Çıkış Yap</a>
       </div>
   
-      <!-- Orta Saat (absolutelı) -->
-      <div id="clock" class="text-white fw-bold position-absolute top-50 start-50 translate-middle" style="font-size: 18px; font-family: 'Segoe UI', sans-serif;"></div>
-  
+      <!-- Orta Saat - sadece büyük ekranlarda ortada -->
+      <div id="clock" class="text-white fw-bold d-none d-lg-block position-absolute top-50 start-50 translate-middle" style="font-size: 18px; font-family: 'Segoe UI', sans-serif;"></div>
+    
     </div>
   </nav>
   
+  <!-- Saat - sadece mobilde navbar altında görünsün -->
+  <div class="d-lg-none text-center py-2" style="background: linear-gradient(to right, #5a189a, #7b2cbf);">
+    <div id="mobile-clock" class="fw-bold text-white" style="font-size: 16px;"></div>
+  </div>
   
-
   <div id="statusBar" class="text-center py-2" style="background-color: #1e293b;">
     <span id="connectionStatus">🔄 Sistem durumu kontrol ediliyor...</span><br>
     <small id="lastSeen" style="color: gray;"></small>
   </div>
-  
-
-  
-  
   
 <div id="notification" class="success">Bildirim buraya gelecek</div>
 <main class="flex-grow-1">
@@ -1066,23 +1065,27 @@ function fetchLdrExtraStatus() {
 </script>
 
 <script>
-  function updateClock() {
-    const now = new Date();
-    const options = {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    };
-    const timeString = now.toLocaleDateString('tr-TR', options);
-    document.getElementById('clock').textContent = timeString;
-  }
-  setInterval(updateClock, 1000);
-  updateClock();
-  </script>
+function updateClock() {
+  const now = new Date();
+  const options = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  };
+  const timeString = now.toLocaleDateString('tr-TR', options);
+  const clock = document.getElementById('clock');
+  const mobileClock = document.getElementById('mobile-clock');
+  if (clock) clock.textContent = timeString;
+  if (mobileClock) mobileClock.textContent = timeString;
+}
+setInterval(updateClock, 1000);
+updateClock();
+</script>
+
 
 <footer class="text-white text-center py-4 mt-3 border-top" style="background: linear-gradient(to right, #5a189a, #7b2cbf);">
   &copy; 2025 Nexlight - Tüm Hakları Saklıdır.
