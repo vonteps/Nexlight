@@ -241,19 +241,29 @@ html, body {
 <body>
 
 
-  <nav class="navbar navbar-expand-lg navbar-dark p-3" style="background: linear-gradient(to right, #5a189a, #7b2cbf);">
-    <div class="container-fluid justify-content-between">
+  <nav class="navbar navbar-expand-lg navbar-dark p-3 position-relative" style="background: linear-gradient(to right, #5a189a, #7b2cbf);">
+    <div class="container-fluid justify-content-between align-items-center">
+  
+      <!-- Sol logo -->
       <div class="d-flex align-items-center gap-2">
         <a href="index.html" class="d-flex align-items-center gap-2">
           <img src="logo.png" alt="Logo" style="height: 60px; filter: drop-shadow(0 0 2px white);">
         </a>        
       </div>
+  
+      <!-- Sağ butonlar -->
       <div class="d-flex gap-2">
         <a href="query_logs_firebase.html" class="navbar-button">🔍 Sorgu Paneli</a>
         <a href="#" class="navbar-button logout" onclick="logout()">🚪 Çıkış Yap</a>
       </div>
+  
+      <!-- Orta Saat (absolutelı) -->
+      <div id="clock" class="text-white fw-bold position-absolute top-50 start-50 translate-middle" style="font-size: 18px; font-family: 'Segoe UI', sans-serif;"></div>
+  
     </div>
   </nav>
+  
+  
 
   <div id="statusBar" class="text-center py-2" style="background-color: #1e293b;">
     <span id="connectionStatus">🔄 Sistem durumu kontrol ediliyor...</span><br>
@@ -1054,6 +1064,25 @@ function fetchLdrExtraStatus() {
     }
   }, 5000);
 </script>
+
+<script>
+  function updateClock() {
+    const now = new Date();
+    const options = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    };
+    const timeString = now.toLocaleDateString('tr-TR', options);
+    document.getElementById('clock').textContent = timeString;
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+  </script>
 
 <footer class="text-white text-center py-4 mt-3 border-top" style="background: linear-gradient(to right, #5a189a, #7b2cbf);">
   &copy; 2025 Nexlight - Tüm Hakları Saklıdır.
