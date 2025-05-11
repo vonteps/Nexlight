@@ -290,14 +290,25 @@ html, body {
         <button class="btn btn-danger" onclick="toggleAllLights('off')">Tümünü Kapat</button>
       </div>
       <div class="text-center mt-5">
-        <h5 class="mb-3">🔎 Anlık LED Durumları</h5>
         <div id="led-status-display" class="d-flex flex-wrap justify-content-center gap-3"></div>
       </div>
     </div>
   </div>
 
   <!-- OTOMATİK MOD -->
+
+  
   <div id="auto-controls" class="hidden mt-5">
+
+    <h5 class="text-center mb-3">🧭 Algılama Kaynağı</h5>
+    <div class="d-flex justify-content-center mb-4">
+      <div class="select-card" onclick="toggleMotionSource()">
+        <input type="checkbox" id="motionSourceSwitch">
+        <img src="https://cdn-icons-png.flaticon.com/512/60/60525.png" alt="Kaynak">
+        <div>Kaynak: Switch / Sensör</div>
+      </div>
+    </div>
+
     <h5 class="text-center mb-3">🎯 Sensör Ayarları</h5>
     <div class="d-flex flex-wrap justify-content-center gap-3 mb-4">
       <div class="select-card" onclick="toggleSensor(1)">
@@ -311,25 +322,8 @@ html, body {
         <div>Sensör 2</div>
       </div>
     </div>
-
-    <h5 class="text-center mb-3">🌙 LDR Ayarı</h5>
-    <div class="d-flex justify-content-center mb-4">
-      <div class="select-card" onclick="toggleLDR()">
-        <input type="checkbox" id="ldrEnabled">
-        <img src="https://cdn-icons-png.flaticon.com/512/1160/1160411.png" alt="LDR">
-        <div>Ortam Işığı</div>
-      </div>
-    </div>
-
-    <h5 class="text-center mb-3">🧭 Hareket Algılama Kaynağı</h5>
-    <div class="d-flex justify-content-center mb-4">
-      <div class="select-card" onclick="toggleMotionSource()">
-        <input type="checkbox" id="motionSourceSwitch">
-        <img src="https://cdn-icons-png.flaticon.com/512/60/60525.png" alt="Kaynak">
-        <div>Kaynak: Switch / Sensör</div>
-      </div>
-    </div>
-
+<div id="sensor-live-status" class="d-flex flex-wrap justify-content-center gap-3 mb-5"></div>
+    
     <h5 class="text-center mb-3">💡 LED Ayarları</h5>
     <div class="d-flex flex-wrap justify-content-center gap-3 mb-4">
       <div class="select-card" onclick="toggleLed(1)">
@@ -360,10 +354,19 @@ html, body {
   <button class="btn btn-danger" onclick="setAllAutoConfigLeds(false)">Tümünü Pasifleştir</button>
 </div>
 
-
     <div class="text-center mt-5">
-      <h5 class="mb-3">🔎 Anlık LED Durumları</h5>
       <div id="auto-led-status" class="d-flex flex-wrap justify-content-center gap-3"></div>
+    </div>
+
+    <br>
+
+    <h5 class="text-center mb-3">🌙 LDR Ayarı</h5>
+    <div class="d-flex justify-content-center mb-4">
+      <div class="select-card" onclick="toggleLDR()">
+        <input type="checkbox" id="ldrEnabled">
+        <img src="https://cdn-icons-png.flaticon.com/512/1160/1160411.png" alt="LDR">
+        <div>Ortam Işığı</div>
+      </div>
     </div>
 
     <!-- 🔄 Ekstra Durum Kartları -->
@@ -438,7 +441,7 @@ html, body {
   </div>
 
   <!-- 🔎 Anlık LED Durumları -->
-  <h5 class="text-center mb-3">🔎 Anlık LED Durumları</h5>
+  <div class="text-center mt-5">
   <div id="ldr-led-status" class="d-flex flex-wrap justify-content-center gap-3"></div>
 
 </div>
@@ -502,6 +505,46 @@ function toggleLdrLed(id) {
     "https://cdn-icons-png.flaticon.com/512/1828/1828843.png", // Pasif icon
     isChecked
   );
+}
+
+
+function fetchSensorLiveStatus() {
+  const container = document.getElementById("sensor-live-status");
+  if (!container) return;
+
+  db.ref("auto_config").on("value", snap => {
+    const d = snap.val() || {};
+    const s1 = d.sensor1_status === "motion";
+    const s2 = d.sensor2_status === "motion";
+
+    container.innerHTML = "";
+
+    const sensors = [
+      {
+        name: "Sensör 1",
+        motion: s1,
+        icon: s1
+          ? "https://cdn-icons-png.flaticon.com/512/1082/1082709.png"
+          : "https://cdn-icons-png.flaticon.com/512/1828/1828843.png"
+      },
+      {
+        name: "Sensör 2",
+        motion: s2,
+        icon: s2
+          ? "https://cdn-icons-png.flaticon.com/512/1082/1082709.png"
+          : "https://cdn-icons-png.flaticon.com/512/1828/1828843.png"
+      }
+    ];
+
+    sensors.forEach(({ name, motion, icon }) => {
+      const div = document.createElement("div");
+      div.className = `status-card ${motion ? "on" : "off"}`;
+      div.innerHTML = `
+        <div>${name}: ${motion ? "🚶 Hareket Var" : "🛑 Yok"}</div>
+      `;
+      container.appendChild(div);
+    });
+  });
 }
 
 
@@ -946,7 +989,8 @@ function fetchLdrExtraStatus() {
   fetchRealtimeExtras();
   fetchLdrAndUpdateLEDs();
   fetchLdrExtraStatus();
-  fetchLdrThreshold(); 
+  fetchLdrThreshold();
+  fetchSensorLiveStatus(); 
 });
 
 </script>
